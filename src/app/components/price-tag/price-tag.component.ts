@@ -3,6 +3,18 @@ import {Customer, Representative} from "../../api/customer";
 import {Table} from "primeng/table";
 import {Product} from "../../api/product";
 import {PriceTag} from "../../api/price-tag";
+import {TagService} from "../../service/tag.service";
+import {map} from "rxjs/operators";
+import {BaseStation} from "../../api/base-station";
+import {CompanyService} from "../../service/company.service";
+import {StoreService} from "../../service/store.service";
+import {StationService} from "../../service/station.service";
+import {Company} from "../../api/company";
+import {Store} from "../../api/store";
+import {ZkongService} from "../../service/zkong.service";
+import {ProductItem} from "../../api/product-item";
+import {ProductService} from "../../service/productservice";
+import {ItemService} from "../../service/item.service";
 
 @Component({
   selector: 'app-price-tag',
@@ -11,34 +23,19 @@ import {PriceTag} from "../../api/price-tag";
 })
 export class PriceTagComponent implements OnInit {
 
+  products: ProductItem[];
 
-  customer:Customer = {};
+  stations: BaseStation[];
 
-  customers1: Customer[];
+  station1: BaseStation;
 
-  customers2: Customer[];
+  companies: Company[];
 
-  customers3: Customer[];
+  company1: Company;
 
-  selectedCustomers1: Customer[];
+  stores: Store[];
 
-  selectedCustomer: Customer;
-
-  representatives: Representative[];
-
-  statuses: any[];
-
-  products: Product[];
-
-  rowGroupMetadata: any;
-
-  expandedRows = {};
-
-  activityValues: number[] = [0, 100];
-
-  isExpanded: boolean = false;
-
-  idFrozen: boolean = false;
+  store1: Store;
 
   loading:boolean = true;
 
@@ -48,33 +45,42 @@ export class PriceTagComponent implements OnInit {
 
   submitted:boolean = true;
 
-  priceTags: PriceTag[];
+  tags: PriceTag[];
+
+  editTag: PriceTag = {};
 
   @ViewChild('dt') table: Table;
 
   @ViewChild('filter') filter: ElementRef;
 
-  constructor() { }
+  constructor(private tagService: TagService,
+              private companyService: CompanyService,
+              private zkongService: ZkongService,
+              private productService: ItemService,
+              private storeService: StoreService,
+              private stationService: StationService) { }
 
   ngOnInit(): void {
     this.loading = false;
-    this.priceTags = [
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-      {baseStationId: 'asd234',  tagId: 'AFA5345344', storeId: 'asd123'},
-    ]
+    this.loadTags();
+
+    this.stations = this.stationService.getAllStations();
+    this.companies = this.companyService.loadAllCompanies();
+    this.stores = this.storeService.getAllStores();
+    this.productService.getItems()
+      .pipe(map(res =>{
+        this.products = res
+       }))
+      .subscribe();
+
   }
 
 
   confirmDeleteSelected() {
 
   }
-  editProduct(customer: Customer) {
-    this.customer = {...customer}
+  editProduct(tag: PriceTag) {
+    this.editTag = {...tag}
     this.productDialog = true;
   }
 
@@ -82,17 +88,44 @@ export class PriceTagComponent implements OnInit {
     this.deleteProductsDialog = true;
   }
 
-  loadCompanies() {
+  loadTags() {
+    this.tagService.getTags()
+      .pipe(map(env => {
+        this.tags = env;
+      }))
+      .subscribe();
   }
 
   newCustomer() {
-    this.customer = {};
+    this.editTag = {};
     this.productDialog = true;
   }
 
   clear(table: Table) {
     table.clear();
     this.filter.nativeElement.value = '';
+  }
+
+  hideDialog() {
+    this.productDialog = false;
+  }
+
+  bindTagsWithItems() {
+    this.zkongService.bindTagsWithItems()
+      .pipe(map(res => {
+        this.loadTags();
+      }))
+      .subscribe();
+  }
+
+  saveProduct() {
+    this.productDialog = false;
+    console.log(this.editTag.baseStation?.ipAddress);
+    this.tagService.addTag(this.editTag)
+      .pipe(map(value => {
+        this.loadTags();
+      }))
+      .subscribe();
   }
 
 }

@@ -9,7 +9,8 @@
           </div>
         </ng-template>
         <ng-template pTemplate="right">
-          <p-fileUpload mode="basic" (change)="loadFile($event)" accept=".xlsx,.pdf,.csv,.xls" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+          <button pButton label="Интегрировать" style="margin-right: 20px" (click)="productIntegration()"></button>
+          <p-fileUpload mode="basic" name="docs[]" [customUpload]="true" (uploadHandler)="loadFile($event)" accept=".xlsx,.pdf,.csv,.xls" label="Import" chooseLabel="Import" class="mr-2 inline-block" [auto]="true"></p-fileUpload>
         </ng-template>
       </p-toolbar>
 
@@ -31,6 +32,14 @@
                 <p-columnFilter type="text" field="name" display="menu" placeholder="Search by name"></p-columnFilter>
               </div>
             </th>
+
+            <th>
+              <div class="flex justify-content-between align-items-center">
+                Описания
+                <p-columnFilter type="text" field="name" display="menu" placeholder="Search by name"></p-columnFilter>
+              </div>
+            </th>
+
             <th>
               <div class="flex justify-content-between align-items-center">
                 Баркод
@@ -46,22 +55,7 @@
             </th>
             <th>
               <div class="flex justify-content-between align-items-center">
-                Старая цена
-              </div>
-            </th>
-            <th>
-              <div class="flex justify-content-between align-items-center">
-                Количество
-              </div>
-            </th>
-            <th>
-              <div class="flex justify-content-between align-items-center">
-                Качество
-              </div>
-            </th>
-            <th>
-              <div class="flex justify-content-between align-items-center">
-                Страна производитель
+                Оригинальная цена
               </div>
             </th>
             <th>
@@ -69,33 +63,35 @@
                 Ед.изм.
               </div>
             </th>
+            <th>
+              <div class="flex justify-content-between align-items-center">
+                Статус
+              </div>
+            </th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-product1>
           <tr>
             <td style="min-width: 12rem;">
-              {{product1.name}}
+              {{product1.shortTitle}}
             </td>
             <td style="min-width: 12rem;">
-              {{product1.barcode}}
+              {{product1.itemTitle}}
+            </td>
+            <td style="min-width: 12rem;">
+              {{product1.barCode}}
             </td>
             <td style="min-width: 12rem;">
               {{product1.price}}
             </td>
             <td style="min-width: 12rem;">
-              {{product1.oldPrice}}
+              {{product1.originalPrice}}
             </td>
             <td style="min-width: 10rem;">
-              {{product1.quantity}}
+              {{product1.unit}}
             </td>
             <td style="min-width: 12rem;">
-              <span>{{product1.quality}}</span>
-            </td>
-            <td style="min-width: 12rem;">
-              <span class="image-text ml-2">{{product1.madeCountry}}</span>
-            </td>
-            <td style="min-width: 12rem;">
-              <span [class]="'customer-badge status-' + customer.status">{{product1.unit}}</span>
+              <span class="image-text ml-2">{{product1.status}}</span>
             </td>
             <td>
               <div class="flex">
@@ -134,98 +130,225 @@
 <!--                                                   Product Dialog                 -->
 
 
-    <p-dialog [(visible)]="productDialog" [style]="{width: '450px'}" header="Product Details" [modal]="true" class="p-fluid">
+    <p-dialog [(visible)]="productDialog" [style]="{width: '90%'}" header="Product Details" [modal]="true" class="p-fluid">
       <ng-template pTemplate="content">
-        <!--        <img [src]="'assets/demo/images/product/' + customer.image" [alt]="customer.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" *ngIf="product.image">-->
 
         <div class="field">
-          <label for="status">Номер ценника</label>
-          <p-dropdown id="status" [options]="statuses" optionLabel="label" [(ngModel)]="product2.tagId" placeholder="Select a Status">
+          <label for="status">Организация</label>
+          <p-dropdown id="status" [options]="stations" optionLabel="companyName" [(ngModel)]="product2.station" placeholder="Select a Station">
             <ng-template pTemplate="selectedItem">
-              <span *ngIf="product2 && product2.inventoryStatus" [class]="'product-badge status-' + product2.inventoryStatus.value">{{product.inventoryStatus.label}}</span>
+              <span *ngIf="product2.station">{{product2.station}}</span>
             </ng-template>
-            <ng-template let-status pTemplate="status">
-              <span [class]="'product-badge status-' + status.value.toLowerCase()">{{status.label}}</span>
+            <ng-template let-station pTemplate="status">
+              <span>{{station.ipAddress}}</span>
             </ng-template>
           </p-dropdown>
         </div>
 
+        <div class="grid">
+          <label>Основные данные</label>
+          <div class="col">
+            <div class="field">
+              <label for="name">Код товара</label>
+              <input type="text" pInputText id="name" [(ngModel)]="product2.productCode" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.productCode}"/>
+              </div>
 
-        <div class="field">
-          <label for="name">Name</label>
-          <input type="text" pInputText id="name" [(ngModel)]="product2.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.name}"/>
-          <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.name">Name is required.</small>
+            <div class="field">
+              <label for="name">Наименования</label>
+              <input type="text" pInputText id="barcode" [(ngModel)]="product2.shortTitle" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.shortTitle}"/>
+            </div>
+
+
+            <div class="field">
+              <label for="name">Баркод</label>
+              <input type="text" pInputText [(ngModel)]="product2.barCode" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.barCode}"/>
+              <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.barCode">Barcode is required.</small>
+            </div>
+
+            <div class="field">
+              <label for="name">Ед.изм.</label>
+              <input type="text" pInputText [(ngModel)]="product2.unit" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.unit}"/>
+            </div>
+
+            <div class="field">
+              <label for="name">Описание</label>
+              <input type="text" pInputText [(ngModel)]="product2.itemTitle" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.itemTitle}"/>
+            </div>
+
+
+            <div class="field">
+              <label for="name">Sku Код</label>
+              <input type="text" pInputText [(ngModel)]="product2.productSku" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.productSku}"/>
+            </div>
+
+            <div class="field">
+              <label for="name">NFC адрес</label>
+              <input type="text" pInputText [(ngModel)]="product2.nfcUrl" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.nfcUrl}"/>
+            </div>
+
+
+          </div>
+
+          <div class="col">
+
+            <div class="field">
+              <label for="name">Уровень</label>
+              <input type="text" pInputText [(ngModel)]="product2.classLevel" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.classLevel}"/>
+             </div>
+
+            <div class="field">
+              <label for="name">Категория шаблона</label>
+              <input type="text" pInputText [(ngModel)]="product2.attrCategory" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.attrCategory}"/>
+              <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.attrCategory">Attr Category is required.</small>
+            </div>
+
+            <div class="field">
+              <label for="name">Тип шаблона</label>
+              <input type="text" pInputText [(ngModel)]="product2.attrName" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.attrName}"/>
+              <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.attrName">Template type is required.</small>
+            </div>
+
+            <div class="field">
+              <label for="name">Origin</label>
+              <input type="text" pInputText [(ngModel)]="product2.spec" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.spec}"/>
+             </div>
+
+            <div class="field">
+              <label for="name">QR-код адрес</label>
+              <input type="text" pInputText [(ngModel)]="product2.qrCode" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.qrCode}"/>
+             </div>
+          </div>
+
         </div>
 
-        <div class="field">
-          <label for="name">Barcode</label>
-          <input type="text" pInputText id="barcode" [(ngModel)]="product2.barcode" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.barcode}"/>
-          <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.barcode">Barcode is required.</small>
+        <div class="grid">
+          <label>Спецификация</label>
+          <div class="col">
+
+            <div class="field">
+              <label for="name">Спецификация</label>
+              <input type="text" pInputText [(ngModel)]="product2.spec" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.spec}"/>
+            </div>
+
+            <div class="field">
+              <label for="name">Оригинальная цена</label>
+              <input type="text" pInputText [(ngModel)]="product2.originalPrice" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.originalPrice}"/>
+            </div>
+
+            <div class="field">
+              <label for="name">Акция 1</label>
+              <input type="text" pInputText [(ngModel)]="product2.stock1" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.stock1}"/>
+              <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.stock1">Barcode is required.</small>
+            </div>
+
+            <div class="field">
+              <label for="name">Акция 3</label>
+              <input type="text" pInputText [(ngModel)]="product2.stock3" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.stock3}"/>
+              <small class="ng-dirty ng-invalid" *ngIf="submitted && !product2.stock3">Barcode is required.</small>
+            </div>
+
+          </div>
+
+          <div class="col">
+
+            <div class="field">
+              <label for="name">Цена продажи</label>
+              <input type="text" pInputText [(ngModel)]="product2.price" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.price}"/>
+
+            </div>
+
+            <div class="field">
+              <label for="name">VIP цена</label>
+              <input type="text" pInputText [(ngModel)]="product2.memberPrice" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.memberPrice}"/>
+              </div>
+
+            <div class="field">
+              <label for="name">Акция 2</label>
+              <input type="text" pInputText [(ngModel)]="product2.stock2" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !product2.stock2}"/>
+              </div>
+
+          </div>
         </div>
 
+        <div class="col-12">
 
+            <div class="field">
+              <label for="name">Свойство 1</label>
+              <input type="text" pInputText [(ngModel)]="product2.custFeature1" required autofocus/>
+            </div>
 
-<!--        price?: number;-->
-<!--        oldPrice?: number;-->
-<!--        quantity?: number;-->
-<!--        quality?: string;-->
-<!--        inventoryStatus?: string;-->
-<!--        category?: string;-->
-<!--        image?: string;-->
-<!--        rating?: number;-->
-<!--        madeCountry?: string;-->
-<!--        registrationDate?: string;-->
-<!--        unit?: string;-->
-<!--        -->
-                <div class="field">
-                  <label for="description">Description</label>
-                  <textarea id="description" pInputTextarea [(ngModel)]="product2.description" required rows="3" cols="20"></textarea>
-                </div>
+          <div class="field">
+            <label for="name">Свойство 2</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature2" required autofocus/>
+          </div>
 
-        <!--        <div class="field">-->
-        <!--          <label for="status">Inventory Status</label>-->
-        <!--          <p-dropdown id="status" [options]="statuses" optionLabel="label" [(ngModel)]="product.inventoryStatus" placeholder="Select a Status">-->
-        <!--            <ng-template pTemplate="selectedItem">-->
-        <!--              <span *ngIf="product && product.inventoryStatus" [class]="'product-badge status-' + product.inventoryStatus.value">{{product.inventoryStatus.label}}</span>-->
-        <!--            </ng-template>-->
-        <!--            <ng-template let-status pTemplate="status">-->
-        <!--              <span [class]="'product-badge status-' + status.value.toLowerCase()">{{status.label}}</span>-->
-        <!--            </ng-template>-->
-        <!--          </p-dropdown>-->
-        <!--        </div>-->
+          <div class="field">
+            <label for="name">Свойство 3</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature3" required autofocus/>
+          </div>
 
-        <!--        <div class="field">-->
-        <!--          <label class="mb-3">Category</label>-->
-        <!--          <div class="formgrid grid">-->
-        <!--            <div class="field-radiobutton col-6">-->
-        <!--              <p-radioButton id="category1" name="category" value="Accessories" [(ngModel)]="product.category"></p-radioButton>-->
-        <!--              <label for="category1">Accessories</label>-->
-        <!--            </div>-->
-        <!--            <div class="field-radiobutton col-6">-->
-        <!--              <p-radioButton id="category2" name="category" value="Clothing" [(ngModel)]="product.category"></p-radioButton>-->
-        <!--              <label for="category2">Clothing</label>-->
-        <!--            </div>-->
-        <!--            <div class="field-radiobutton col-6">-->
-        <!--              <p-radioButton id="category3" name="category" value="Electronics" [(ngModel)]="product.category"></p-radioButton>-->
-        <!--              <label for="category3">Electronics</label>-->
-        <!--            </div>-->
-        <!--            <div class="field-radiobutton col-6">-->
-        <!--              <p-radioButton id="category4" name="category" value="Fitness" [(ngModel)]="product.category"></p-radioButton>-->
-        <!--              <label for="category4">Fitness</label>-->
-        <!--            </div>-->
-        <!--          </div>-->
-        <!--        </div>-->
+          <div class="field">
+            <label for="name">Свойство 4</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature4" required autofocus/>
+          </div>
 
-        <!--        <div class="formgrid grid">-->
-        <!--          <div class="field col">-->
-        <!--            <label for="price">Price</label>-->
-        <!--            <p-inputNumber id="price" [(ngModel)]="product.price" mode="currency" currency="USD" locale="en-US"></p-inputNumber>-->
-        <!--          </div>-->
-        <!--          <div class="field col">-->
-        <!--            <label for="quantity">Quantity</label>-->
-        <!--            <p-inputNumber id="quantity" [(ngModel)]="product.quantity"></p-inputNumber>-->
-        <!--          </div>-->
-        <!--        </div>-->
+          <div class="field">
+            <label for="name">Свойство 5</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature5" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 6</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature6" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 7</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature7" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 8</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature8" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 9</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature9" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 10</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature10" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 11</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature11" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 12</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature12" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 13</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature13" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 14</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature14" required autofocus/>
+          </div>
+
+          <div class="field">
+            <label for="name">Свойство 15</label>
+            <input type="text" pInputText [(ngModel)]="product2.custFeature15" required autofocus/>
+          </div>
+
+        </div>
+
       </ng-template>
 
       <ng-template pTemplate="footer">
@@ -246,6 +369,7 @@
 							<i class="pi pi-search"></i>
 							<input pInputText type="text" #filter (input)="dt1.filterGlobal($event.target.value, 'contains')" placeholder="Search Keyword" class="w-full"/>
 						</span>
+              <button pButton label="Добавить" class="p-button-outlined mb-2" (click)="saveList()"></button>
               <button pButton label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (click)="clear(dt1)"></button>
             </div>
           </ng-template>
@@ -260,14 +384,14 @@
                 </div>
               </th>
               <th>
-              <div class="flex justify-content-between align-items-center">
-                Ценник
-                <p-columnFilter type="text" field="name" display="menu" placeholder="Search by name"></p-columnFilter>
-              </div>
+                <div class="flex justify-content-between align-items-center">
+                  Наименование
+                  <p-columnFilter type="text" field="name" display="menu" placeholder="Search by name"></p-columnFilter>
+                </div>
               </th>
               <th>
                 <div class="flex justify-content-between align-items-center">
-                  Наименование
+                  Описание
                   <p-columnFilter type="text" field="name" display="menu" placeholder="Search by name"></p-columnFilter>
                 </div>
               </th>
@@ -291,21 +415,6 @@
               </th>
               <th>
                 <div class="flex justify-content-between align-items-center">
-                  Количество
-                </div>
-              </th>
-              <th>
-                <div class="flex justify-content-between align-items-center">
-                  Качество
-                </div>
-              </th>
-              <th>
-                <div class="flex justify-content-between align-items-center">
-                  Страна производитель
-                </div>
-              </th>
-              <th>
-                <div class="flex justify-content-between align-items-center">
                   Ед.изм.
                 </div>
               </th>
@@ -320,34 +429,25 @@
                 </div>
               </td>
               <td style="min-width: 12rem;">
-                {{product1.itemStatus}}
+                {{product1.status}}
               </td>
               <td style="min-width: 12rem;">
-                {{product1.tagId}}
+                {{product1.shortTitle}}
               </td>
               <td style="min-width: 12rem;">
-                {{product1.name}}
+                {{product1.itemTitle}}
               </td>
               <td style="min-width: 12rem;">
-                {{product1.barcode}}
+                {{product1.barCode}}
               </td>
               <td style="min-width: 12rem;">
                 {{product1.price}}
               </td>
               <td style="min-width: 12rem;">
-                {{product1.oldPrice}}
-              </td>
-              <td style="min-width: 10rem;">
-                {{product1.quantity}}
+                {{product1.originalPrice}}
               </td>
               <td style="min-width: 12rem;">
-                <span>{{product1.quality}}</span>
-              </td>
-              <td style="min-width: 12rem;">
-                <span class="image-text ml-2">{{product1.madeCountry}}</span>
-              </td>
-              <td style="min-width: 12rem;">
-                <span [class]="'customer-badge status-' + customer.status">{{product1.unit}}</span>
+                <span [class]="'customer-badge status-' + product1.unit">{{product1.unit}}</span>
               </td>
 
             </tr>

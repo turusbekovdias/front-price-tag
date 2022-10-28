@@ -1,7 +1,9 @@
+import {Store} from "./store";
+
 export interface BaseStation {
-  stationId?: string;
+  id?: number;
   ipAddress?: string;
-  storeId?: string;
+  store?: Store;
   status?: string;
   registrationDate?: string;
 }

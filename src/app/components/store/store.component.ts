@@ -3,6 +3,10 @@ import {Customer, Representative} from "../../api/customer";
 import {Table} from "primeng/table";
 import {Product} from "../../api/product";
 import {Store} from "../../api/store";
+import {StoreService} from "../../service/store.service";
+import {map} from "rxjs/operators";
+import {CompanyService} from "../../service/company.service";
+import {Company} from "../../api/company";
 
 @Component({
   selector: 'app-store',
@@ -10,35 +14,6 @@ import {Store} from "../../api/store";
   styleUrls: ['./store.component.scss']
 })
 export class StoreComponent implements OnInit {
-
-
-  customer:Customer = {};
-
-  customers1: Customer[];
-
-  customers2: Customer[];
-
-  customers3: Customer[];
-
-  selectedCustomers1: Customer[];
-
-  selectedCustomer: Customer;
-
-  representatives: Representative[];
-
-  statuses: any[];
-
-  products: Product[];
-
-  rowGroupMetadata: any;
-
-  expandedRows = {};
-
-  activityValues: number[] = [0, 100];
-
-  isExpanded: boolean = false;
-
-  idFrozen: boolean = false;
 
   loading:boolean = true;
 
@@ -48,32 +23,33 @@ export class StoreComponent implements OnInit {
 
   submitted:boolean = true;
 
+  companies: Company[];
+
   stores: Store[];
+
+  editStore:Store = {};
 
   @ViewChild('dt') table: Table;
 
   @ViewChild('filter') filter: ElementRef;
 
-  constructor() { }
+  constructor(private storeService: StoreService, private companyService: CompanyService) { }
 
   ngOnInit(): void {
     this.loading = false;
-    this.stores = [
-      {country: 'Kazakhstan', city: 'Almaty', storeAddress: "Tole bi 2a", registrationDate: '2022-08-08', storeStatus: 'active'},
-      {country: 'Kazakhstan', city: 'Astana', storeAddress: "kvartal 2a",registrationDate: '2022-08-08', storeStatus: 'close'},
-      {country: 'Kazakhstan', city: 'Shymkent', storeAddress: "Abay 2a",registrationDate: '2022-08-08', storeStatus: ''},
-      {country: 'Kazakhstan', city: 'Taraz', storeAddress: "Kazibek bi 2a",registrationDate: '2022-08-08'},
-      {country: 'Kazakhstan', city: 'Taldykorgan', storeAddress: "Alfarab bi 2a",registrationDate: '2022-08-08'},
-      {country: 'Kazakhstan', city: 'Bishkek', storeAddress: "Momishuly 2a",registrationDate: '2022-08-08'},
-    ]
+    this.loadStores();
+    this.companies = this.companyService.loadAllCompanies();
   }
 
 
   confirmDeleteSelected() {
-
+    this.storeService.deleteStore(this.editStore.id).pipe(map(value => {
+      console.log(value);
+    })).subscribe();
   }
-  editProduct(customer: Customer) {
-    this.customer = {...customer}
+
+  editProduct(store: Store) {
+    this.editStore = {...store}
     this.productDialog = true;
   }
 
@@ -81,12 +57,28 @@ export class StoreComponent implements OnInit {
     this.deleteProductsDialog = true;
   }
 
-  loadCompanies() {
+  loadStores() {
+    this.storeService.getStores().pipe(map(value => {
+      this.stores = value;
+    }))
+      .subscribe();
   }
 
-  newCustomer() {
-    this.customer = {};
+  newStore() {
+    this.editStore = {};
     this.productDialog = true;
+  }
+
+  hideDialog() {
+    this.productDialog = false;
+  }
+
+  saveProduct() {
+    this.storeService.addStore(this.editStore)
+      .pipe(map(value => {
+        console.log(value);
+      }))
+      .subscribe();
   }
 
   clear(table: Table) {

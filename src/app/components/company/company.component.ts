@@ -17,30 +17,6 @@ export class CompanyComponent implements OnInit {
 
   company1: Company[];
 
-  customers2: Customer[];
-
-  customers3: Customer[];
-
-  selectedCustomers1: Customer[];
-
-  selectedCustomer: Customer;
-
-  representatives: Representative[];
-
-  statuses: any[];
-
-  products: Product[];
-
-  rowGroupMetadata: any;
-
-  expandedRows = {};
-
-  activityValues: number[] = [0, 100];
-
-  isExpanded: boolean = false;
-
-  idFrozen: boolean = false;
-
   loading:boolean = true;
 
   deleteCompaniesDialog:boolean = false;
@@ -57,31 +33,37 @@ export class CompanyComponent implements OnInit {
 
   ngOnInit(): void {
     this.loading = false;
-    this.company1 = [
-      {name: 'Alabs Team', country: 'Kazakhstan', date: '2022-08-08', status: 'active'},
-      {name: 'Khan', country: 'Russia', date: '2022-08-08', status: 'close'},
-      {name: 'Tumar', country: 'USA', date: '2022-08-08', status: 'active'},
-      {name: 'Elba', country: 'UK', date: '2022-08-08', status: 'active'},
-      {name: 'Magnum', country: 'French', date: '2022-08-08', status: 'active'},
-      {name: 'Sulpak', country: 'Italy', date: '2022-08-08', status: 'active'},
-    ]
+    this.loadCompanies();
   }
 
 
   confirmDeleteSelected() {
-
+    this.loading = true;
+    this.companyService.deleteCompany(this.companyEdit.id).pipe(map(value => {
+      this.loading = false;
+    }))
+      .subscribe();
   }
+
+  loadCompanies() {
+    this.loading = true;
+    this.companyService.getCompanies().pipe(map(value => {
+      this.company1 = value;
+      console.log("test");
+      this.loading = false;
+    }))
+      .subscribe();
+  }
+
   editCompany(company: Company) {
     this.companyEdit = {...company}
     this.companyDialog = true;
   }
 
   deleteCompany(comnpany: Company) {
+    this.companyEdit = comnpany;
     this.deleteCompaniesDialog = true;
    }
-
-  loadCompanies() {
-  }
 
   newCompany() {
     this.companyEdit = {};
@@ -94,10 +76,10 @@ export class CompanyComponent implements OnInit {
 
   saveCompany() {
     this.companyService.addCompany(this.companyEdit).pipe(map(value => {
-      console.log("test");
+      this.loadCompanies();
     }))
       .subscribe();
-    console.log("stranno");
+    this.companyDialog = false;
   }
 
   clear(table: Table) {

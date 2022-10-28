@@ -11,25 +11,27 @@ import {environment} from "../../environments/environment";
 })
 export class CompanyService {
 
+  headerDict = {
+    "Content-Type": "application/json",
+    'Accept': 'application/json',
+    "Access-Control-Allow-Methods": "POST, GET, OPTIONS, DELETE, PUT",
+    "Access-Control-Allow-Origin": '*',
+  };
+
   constructor(private http: HttpClient) { }
 
+  private companies: Company[];
 
-  addCompany(company: Company) : Observable<Company>{
+  loadAllCompanies() {
+    return this.companies;
+  }
 
-    const headerDict = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
-      'Access-Control-Max-Age': '1000',
-      'Access-Control-Allow-Headers': 'x-requested-with, Content-Type, origin, authorization, accept, client-security-token',
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-
+  addCompany(company: Company) {
     return this.http
       .post<any>(
         `${environment.apiAdmin}/api/v1/companies/add/company`, company,  {
-          headers: new HttpHeaders( headerDict ),
-        }
+          headers: new HttpHeaders( this.headerDict ),
+         }
       )
       .pipe(
         map((res) => {return res}),
@@ -38,32 +40,53 @@ export class CompanyService {
 
   }
 
-  editCompany(company: Company) {
-    return this.http.get<any>('http://localhost:8080/v1/store/')
-      .toPromise()
-      .then(res => res.data as any[])
-      .then(data => data);
+  editCompany(company: Company): Observable<Company> {
+    return this.http.put<any>(`${environment.apiAdmin}/api/v1/companies/edit/company`, company, {
+        headers: new HttpHeaders( this.headerDict ),
+      }
+    )
+      .pipe(
+        map((res) => {return res}),
+        catchError(this.handleError)
+      );
   }
 
-  getCompanies() {
-    return this.http.get<any>('http://localhost:8080/v1/store/')
-      .toPromise()
-      .then(res => res.data as any[])
-      .then(data => data);
+  getCompanies() : Observable<Array<Company>> {
+    return this.http.get<any>(`${environment.apiAdmin}/api/v1/companies/company/list`, {
+        headers: new HttpHeaders( this.headerDict )
+      }
+    )
+      .pipe(
+        map((res) => {
+          this.companies = res;
+          return res
+        }),
+        catchError(this.handleError)
+      );
   }
 
   getCompanyById(id: string) {
-    return this.http.get<any>('http://localhost:8080/v1/store/')
-      .toPromise()
-      .then(res => res.data as any[])
-      .then(data => data);
+    return this.http.get<any>(`${environment.apiAdmin}/api/v1/companies/{id}`, {
+      headers: new HttpHeaders( this.headerDict )
+    }
+  )
+  .pipe(
+      map((res) => {return res}),
+      catchError(this.handleError)
+    );
   }
 
-  deleteCompany(id: string) {
-    return this.http.delete<any>('http://localhost:8080/v1/store/')
-      .toPromise()
-      .then(res => res.data as any[])
-      .then(data => data);
+  deleteCompany(id: number) {
+
+    console.log(id);
+    return this.http.delete<any>(`${environment.apiAdmin}/api/v1/companies/${id}`, {
+        headers: new HttpHeaders( this.headerDict )
+      }
+    )
+      .pipe(
+        map((res) => {return res}),
+        catchError(this.handleError)
+      );
   }
 
   handleError(error: any) {

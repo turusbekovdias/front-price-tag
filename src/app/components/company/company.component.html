@@ -2,7 +2,7 @@
   <div class="col-12">
     <div class="card">
       <h5>Организаций</h5>
-      <p-table #dt1 [value]="company1" dataKey="id" [rows]="10" [loading]="loading" [rowHover]="true" styleClass="p-datatable-gridlines" [paginator]="true" [globalFilterFields]="['name','country.name','representative.name','status']" responsiveLayout="scroll">
+      <p-table #dt1 [value]="company1" dataKey="id" [rows]="10" [loading]="loading" [rowHover]="true" styleClass="p-datatable-gridlines" [paginator]="true" [globalFilterFields]="['companyName','country','registrationDate','status']" responsiveLayout="scroll">
         <ng-template pTemplate="caption">
           <div class="flex justify-content-between flex-column sm:flex-row">
             <button pButton label="New" icon="pi pi-plus" class="p-button-rounded p-button-success mr-2" (click)="newCompany()"></button>
@@ -44,14 +44,14 @@
         <ng-template pTemplate="body" let-company>
           <tr>
             <td style="min-width: 12rem;">
-              {{company.name}}
+              {{company.companyName}}
             </td>
             <td style="min-width: 12rem;">
               <img src="assets/demo/flags/flag_placeholder.png" [class]="'flag flag-' + company.country" width="30">
               <span class="image-text ml-2">{{company.country}}</span>
             </td>
             <td style="min-width: 10rem;">
-              {{company.date | date: 'MM/dd/yyyy'}}
+              {{company.registrationDate | date: 'MM/dd/yyyy'}}
             </td>
             <td style="min-width: 12rem;">
               <span [class]="'customer-badge status-' + company.status">{{company.status}}</span>
@@ -78,10 +78,10 @@
     </div>
 
 
-    <p-dialog [(visible)]="deleteCompaniesDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+    <p-dialog [(visible)]="deleteCompaniesDialog" header="Увидомление" [modal]="true" [style]="{width:'450px'}">
       <div class="flex align-items-center justify-content-center">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span>Are you sure you want to delete selected products?</span>
+        <span>Хотите удалить данные?</span>
       </div>
       <ng-template pTemplate="footer">
         <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteCompaniesDialog = false"></button>
@@ -96,8 +96,8 @@
 <!--        <img [src]="'assets/demo/images/product/' + customer.image" [alt]="customer.image" width="150" class="mt-0 mx-auto mb-5 block shadow-2" *ngIf="product.image">-->
         <div class="field">
           <label for="name">Названия</label>
-          <input type="text" pInputText id="name" [(ngModel)]="companyEdit.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !companyEdit.name}"/>
-          <small class="ng-dirty ng-invalid" *ngIf="submitted && !companyEdit.name">Name is required.</small>
+          <input type="text" pInputText id="name" [(ngModel)]="companyEdit.companyName" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !companyEdit.name}"/>
+          <small class="ng-dirty ng-invalid" *ngIf="submitted && !companyEdit.companyName">Name is required.</small>
         </div>
 
         <div class="field">

@@ -3,6 +3,12 @@ import {Customer, Representative} from "../../api/customer";
 import {Product} from "../../api/product";
 import {Table} from "primeng/table";
 import {BaseStation} from "../../api/base-station";
+import {StationService} from "../../service/station.service";
+import {map} from "rxjs/operators";
+import {Company} from "../../api/company";
+import {Store} from "../../api/store";
+import {CompanyService} from "../../service/company.service";
+import {StoreService} from "../../service/store.service";
 
 @Component({
   selector: 'app-base-station',
@@ -11,36 +17,17 @@ import {BaseStation} from "../../api/base-station";
 })
 export class BaseStationComponent implements OnInit {
 
+  companies: Company[];
 
-  customer:Customer = {};
+  company1: Company = {};
 
-  customers1: Customer[];
+  stores: Store[];
 
-  customers2: Customer[];
+  store1: Store = {};
 
-  customers3: Customer[];
+  stations: BaseStation[];
 
-  baseStations: BaseStation[];
-
-  selectedCustomers1: Customer[];
-
-  selectedCustomer: Customer;
-
-  representatives: Representative[];
-
-  statuses: any[];
-
-  products: Product[];
-
-  rowGroupMetadata: any;
-
-  expandedRows = {};
-
-  activityValues: number[] = [0, 100];
-
-  isExpanded: boolean = false;
-
-  idFrozen: boolean = false;
+  editStation: BaseStation = {};
 
   loading:boolean = true;
 
@@ -54,26 +41,33 @@ export class BaseStationComponent implements OnInit {
 
   @ViewChild('filter') filter: ElementRef;
 
-  constructor() { }
+  constructor(private stationService: StationService,
+              private companyService: CompanyService,
+              private storeService: StoreService) { }
 
   ngOnInit(): void {
     this.loading = false;
-    this.baseStations = [
-      {stationId: "312546876", ipAddress: '192.168.0.153', registrationDate: '2022-08-08', status: 'active'},
-      {stationId: "234978567", ipAddress: '192.168.0.253', registrationDate: '2022-08-08', status: 'active'},
-      {stationId: "684539739", ipAddress: '192.168.0.10', registrationDate: '2022-08-08', status: 'active'},
-      {stationId: "210374592", ipAddress: '192.168.0.15', registrationDate: '2022-08-08', status: 'active'},
-      {stationId: "547089612", ipAddress: '192.168.0.53', registrationDate: '2022-08-08', status: 'active'},
-      {stationId: "824357234", ipAddress: '192.168.0.13', registrationDate: '2022-08-08', status: 'active'},
-    ]
+    this.loadStations();
+    this.companies = this.companyService.loadAllCompanies();
+    this.stores = this.storeService.getAllStores();
   }
 
+  saveProduct() {
+    console.log(1);
+    this.stationService.addStation(this.editStation)
+      .pipe(map(res => {
+          this.loadStations();
+      }))
+      .subscribe();
+  }
 
   confirmDeleteSelected() {
-
+    this.stationService.deleteStation(this.editStation.id).pipe(map(value => {
+      console.log(value);
+    })).subscribe();
   }
   editProduct(customer: Customer) {
-    this.customer = {...customer}
+    this.editStation = {...customer}
     this.productDialog = true;
   }
 
@@ -81,12 +75,22 @@ export class BaseStationComponent implements OnInit {
     this.deleteProductsDialog = true;
   }
 
-  loadCompanies() {
+  loadStations() {
+    this.stationService.getStations().pipe(map(value => {
+      this.stations = value;
+    }))
+      .subscribe();
   }
 
   newCustomer() {
-    this.customer = {};
+    console.log(this.companies);
+    console.log(this.stores);
+    this.editStation = {};
     this.productDialog = true;
+  }
+
+  hideDialog() {
+    this.productDialog = false;
   }
 
   clear(table: Table) {

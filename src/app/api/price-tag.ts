@@ -1,7 +1,11 @@
+import {BaseStation} from "./base-station";
+import {ProductItem} from "./product-item";
+
 export interface PriceTag {
-  tagId?: string
-  baseStationId?: string;
-  storeId?: string;
+  id?: number;
+  tagCode?: string;
+  baseStation?: BaseStation;
   registrationDate?: string;
   status?: string;
+  productItem?: ProductItem;
 }

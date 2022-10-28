@@ -1,7 +1,7 @@
 export interface Company {
   id?: number;
-  name?: string;
+  companyName?: string;
   country?: string;
-  date?: string;
+  registrationDate?: Date;
   status?: string;
 }
